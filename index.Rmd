@@ -147,7 +147,12 @@ predictions <- predict(modFit, myCV)
 print(confusionMatrix(predictions, myCV$classe))
 ```
 
-As we see, accuracy = 0.9925, that is quite a good result.
+```{r}
+oose <- 1 - as.numeric(confusionMatrix(myCV$classe, predictions)$overall[1])
+oose
+```
+
+As we see, accuracy = 0.9925 and out-of-sample error is 0.75%, that is quite a good result.
 
 **Prediction**
 ===

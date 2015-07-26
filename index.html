@@ -205,6 +205,9 @@ print(confusionMatrix(predictions, myCV$classe))</code></pre>
 ## Detection Rate         0.2840   0.1908   0.1731   0.1612   0.1834
 ## Detection Prevalence   0.2860   0.1926   0.1764   0.1616   0.1834
 ## Balanced Accuracy      0.9977   0.9920   0.9943   0.9916   0.9990</code></pre>
+<pre class="r"><code>oose &lt;- 1 - as.numeric(confusionMatrix(myCV$classe, predictions)$overall[1])
+oose</code></pre>
+<pre><code>## [1] 0.007519755</code></pre>
 <p>As we see, accuracy = 0.9925, that is quite a good result.</p>
 </div>
 <div id="prediction" class="section level1">
