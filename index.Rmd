@@ -150,8 +150,9 @@ print(confusionMatrix(predictions, myCV$classe))
 As we see, accuracy = 0.9925, that is quite a good result.
 
 **Prediction**
+===
 
-Now, we will use our model to make prediction for the test data. Of course, we should not forget to remove the last column - **probmel_id**.
+Now, we will use our model to make prediction for the test data. Of course, we should not forget to remove the last column - **problem_id**.
 
 ```{r}
 result <- predict(modFit, test[, -length(names(test))])

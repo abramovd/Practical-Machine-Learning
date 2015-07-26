@@ -84,7 +84,7 @@ img {
 <li>Your submission should consist of a link to a Github repo with your R markdown and compiled HTML file describing your analysis. Please constrain the text of the writeup to &lt; 2000 words and the number of figures to be less than 5. It will make it easier for the graders if you submit a repo with a gh-pages branch so the HTML page can be viewed online (and you always want to make it easy on graders :-).</li>
 <li>You should also apply your machine learning algorithm to the 20 test cases available in the test data above. Please submit your predictions in appropriate format to the programming assignment for automated grading. See the programming assignment for additional details.</li>
 </ol>
-<p>In order to run this solution there are some libraries that should be installed:</p>
+<p>There are some libraries that should be installed in order to run this solution :</p>
 <pre class="r"><code>library(caret)</code></pre>
 <pre><code>## Loading required package: lattice
 ## Loading required package: ggplot2</code></pre>
@@ -96,18 +96,18 @@ img {
 </div>
 <div id="reading-the-data" class="section level1">
 <h1><strong>Reading the data</strong></h1>
-<p>After data is downloaded from the website, we need to read the scv files in the workspace’s variables. Empty cells are counted as NA values.</p>
+<p>After data is downloaded from the website, we need to read the csv files in the workspace’s variables. Empty cells are counted as NA values.</p>
 <pre class="r"><code>training &lt;- read.csv(&quot;pml-training.csv&quot;, na.strings=c(&quot;NA&quot;, &quot;&quot;, &quot;#DIV/0!&quot;))
 test &lt;- read.csv(&quot;pml-testing.csv&quot;, na.strings=c(&quot;NA&quot;, &quot;&quot;, &quot;#DIV/0!&quot;))</code></pre>
 </div>
 <div id="data-preprocessing" class="section level1">
 <h1><strong>Data preprocessing</strong></h1>
-<p>After reading training and test data, we can look at the training variable to understand the structure:</p>
+<p>After reading training and test data, we can look at the training data set:</p>
 <pre class="r"><code>dim(training)</code></pre>
 <pre><code>## [1] 19622   160</code></pre>
 <p>So, there are 160 columns. Let’s try to understand the structure of our data:</p>
 <pre><code>head(training)</code></pre>
-<p>To save some space the result of this function is not provided. But it can be seen that there are a lot of columns which are full of NA’s. They are not important for predicting the result. So we can remove all columns that have more then 90% of NA values from training and test sets:</p>
+<p>To save some space the result of this function’s call is not provided here. But it can be seen that there are a lot of columns which are full of NA’s. They are not important for predicting results. So we can remove all columns that have more then 90% of NA values from training and test sets:</p>
 <pre class="r"><code>training &lt;- training[colSums(is.na(training)) &lt; 0.1 * nrow(training)]
 test &lt;- test[colSums(is.na(test)) &lt; 0.1 * nrow(test)]</code></pre>
 <p>Let’s check the size of our data after such preprocessing:</p>
@@ -145,15 +145,15 @@ test$num_window &lt;- NULL</code></pre>
 </div>
 <div id="cross-validation" class="section level1">
 <h1><strong>Cross validation</strong></h1>
-<p>After the preprocessing step we shold start to train our algorithm, byt firstly we should split our training set into training and validation sets. It would be helpful for correct estimating the effectivnes of the algorithm:</p>
+<p>After the preprocessing step we can start training our algorithm, but firstly we should split our training set into training and validation sets. It would be helpful for correct estimating the effectivnes of the algorithm:</p>
 <pre class="r"><code>inTrain &lt;- createDataPartition(y=training$classe, p=0.6, list=FALSE)
 myTrain &lt;- training[inTrain, ];
 myCV &lt;- training[-inTrain, ]</code></pre>
-<p>60% of the data goes to training set and 40% - to validation set. In ensure that both sets have examples from different classes the variable class were chosen for partition.</p>
+<p>60% of the data goes to training set and 40% - to validation set. To ensure that both sets have examples from different classes the variable classe has been chosen for partition.</p>
 </div>
 <div id="training-the-model" class="section level1">
 <h1><strong>Training the model</strong></h1>
-<p>For training a model we will use <strong>Random forest</strong> algorithms that is one of the most effective tree-based methods that can automatically select important features.</p>
+<p>For training a model we will use <strong>Random forest</strong> algorithm which is one of the most effective tree-based methods that can automatically select important features.</p>
 <pre class="r"><code>modFit &lt;- randomForest(classe ~. , data=myTrain)
 modFit</code></pre>
 <pre><code>## 
@@ -205,9 +205,11 @@ print(confusionMatrix(predictions, myCV$classe))</code></pre>
 ## Detection Rate         0.2840   0.1908   0.1731   0.1612   0.1834
 ## Detection Prevalence   0.2860   0.1926   0.1764   0.1616   0.1834
 ## Balanced Accuracy      0.9977   0.9920   0.9943   0.9916   0.9990</code></pre>
-<p>As we see accuracy = 0.9925, that is quite a good result.</p>
-<p><strong>Prediction</strong></p>
-<p>Now, we will use our model to make prediction for the test data. Besides, we shoud remove the last column - <strong>probmel_id</strong>.</p>
+<p>As we see, accuracy = 0.9925, that is quite a good result.</p>
+</div>
+<div id="prediction" class="section level1">
+<h1><strong>Prediction</strong></h1>
+<p>Now, we will use our model to make prediction for the test data. Of course, we should not forget to remove the last column - <strong>problem_id</strong>.</p>
 <pre class="r"><code>result &lt;- predict(modFit, test[, -length(names(test))])
 result</code></pre>
 <pre><code>##  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 
