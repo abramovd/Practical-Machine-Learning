@@ -1,0 +1,159 @@
+---
+title: "**Practical Machine Learning**"
+output: html_document
+---
+
+---
+**Background**
+===
+Using devices such as Jawbone Up, Nike FuelBand, and Fitbit it is now possible to collect a large amount of data about personal activity relatively inexpensively. These type of devices are part of the quantified self movement ??? a group of enthusiasts who take measurements about themselves regularly to improve their health, to find patterns in their behavior, or because they are tech geeks. One thing that people regularly do is quantify how much of a particular activity they do, but they rarely quantify how well they do it. In this project, your goal will be to use data from accelerometers on the belt, forearm, arm, and dumbell of 6 participants. They were asked to perform barbell lifts correctly and incorrectly in 5 different ways. More information is available from the website here: http://groupware.les.inf.puc-rio.br/har (see the section on the Weight Lifting Exercise Dataset). 
+
+**Data**
+===
+The training data for this project are available here: 
+
+https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv
+
+The test data are available here: 
+
+https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv
+
+The data for this project come from this source: http://groupware.les.inf.puc-rio.br/har. If you use the document you create for this class for any purpose please cite them as they have been very generous in allowing their data to be used for this kind of assignment. 
+
+**Anticipated results**
+===
+The goal of your project is to predict the manner in which they did the exercise. This is the "classe" variable in the training set. You may use any of the other variables to predict with. You should create a report describing how you built your model, how you used cross validation, what you think the expected out of sample error is, and why you made the choices you did. You will also use your prediction model to predict 20 different test cases. 
+
+1. Your submission should consist of a link to a Github repo with your R markdown and compiled HTML file describing your analysis. Please constrain the text of the writeup to < 2000 words and the number of figures to be less than 5. It will make it easier for the graders if you submit a repo with a gh-pages branch so the HTML page can be viewed online (and you always want to make it easy on graders :-).
+2. You should also apply your machine learning algorithm to the 20 test cases available in the test data above. Please submit your predictions in appropriate format to the programming assignment for automated grading. See the programming assignment for additional details. 
+
+
+There are some libraries that should be installed in order to run this solution :
+
+```{r}
+library(caret)
+library(randomForest)
+```
+
+Besides, to be able to reproduce the experiment the seed shoud be explicitly set:
+
+```{r}
+set.seed(1000)
+```
+
+**Reading the data**
+===
+
+After data is downloaded from the website, we need to read the csv files in the workspace's variables. Empty cells are counted as NA values.
+
+```{r}
+training <- read.csv("pml-training.csv", na.strings=c("NA", "", "#DIV/0!"))
+test <- read.csv("pml-testing.csv", na.strings=c("NA", "", "#DIV/0!"))
+```
+
+**Data preprocessing**
+===
+
+After reading training and test data, we can look at the training data set:
+
+```{r}
+dim(training)
+```
+
+So, there are 160 columns. Let's try to understand the structure of our data:
+```
+head(training)
+```
+To save some space the result of this function's call is not provided here. But it can be seen that there are a lot of columns which are full of NA's. They are not important for predicting results. So we can remove all columns that have more then 90% of NA values from training and test sets:
+
+```{r}
+training <- training[colSums(is.na(training)) < 0.1 * nrow(training)]
+test <- test[colSums(is.na(test)) < 0.1 * nrow(test)]
+```
+
+Let's check the size of our data after such preprocessing:
+
+```{r}
+dim(training)
+```
+
+OK, now we have 60 columns. But if we look at our data closer we can notice some variables that are not important for making predictions:
+
+- X - index for rows
+- iser_name
+- raw_timestamp_part_1
+- raw_timestamp_part_2
+- cvtd_timestamp
+- new_window
+- num_window 
+
+Let's remove these columns:
+
+```{r}
+training$X <- NULL
+training$user_name <- NULL
+training$raw_timestamp_part_1 <- NULL
+training$raw_timestamp_part_2 <- NULL
+training$cvtd_timestamp <- NULL
+training$new_window <- NULL
+training$num_window <- NULL
+```
+
+The same columns shoud be removed from the test set:
+
+```{r}
+test$X <- NULL
+test$user_name <- NULL
+test$raw_timestamp_part_1 <- NULL
+test$raw_timestamp_part_2 <- NULL
+test$cvtd_timestamp <- NULL
+test$new_window <- NULL
+test$num_window <- NULL
+```
+
+
+And check the size of our training data:
+
+```{r}
+dim(training)
+```
+
+**Cross validation**
+===
+
+After the preprocessing step we can start training our algorithm, but firstly we should split our training set into training and validation sets. It would be helpful for correct estimating the effectivnes of the algorithm:
+
+```{r}
+inTrain <- createDataPartition(y=training$classe, p=0.6, list=FALSE)
+myTrain <- training[inTrain, ];
+myCV <- training[-inTrain, ]
+```
+60% of the data goes to training set and 40% - to validation set. To ensure that both sets have examples from different classes the variable classe has been chosen for partition.
+
+**Training the model**
+===
+
+For training a model we will use **Random forest** algorithm which is one of the most effective tree-based methods that can automatically select important features.
+
+```{r}
+modFit <- randomForest(classe ~. , data=myTrain)
+modFit
+```
+
+Then, we can estimate the performance of our model on the validation data set:
+
+```{r}
+predictions <- predict(modFit, myCV)
+print(confusionMatrix(predictions, myCV$classe))
+```
+
+As we see, accuracy = 0.9925, that is quite a good result.
+
+**Prediction**
+
+Now, we will use our model to make prediction for the test data. Of course, we should not forget to remove the last column - **probmel_id**.
+
+```{r}
+result <- predict(modFit, test[, -length(names(test))])
+result
+```
