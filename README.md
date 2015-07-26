@@ -1,3 +1,3 @@
 # Practical-Machine-Learning
 
-The description is here: https://github.com/abramovd/Practical-Machine-Learning/blob/master/index.Rmd
+The description is here: https://abramovd.github.io/practical-machine-learning/index.html
